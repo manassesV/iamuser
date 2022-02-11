@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template for creating an IAM User with possibility to rotate credentials
+
+Resources:
+   IamUser:
+     Type: AWS::IAM::User
+     Properties:
+         ManagedPolicyArns:
+           - arn:aws:iam::aws:policy/AdministratorAccess
+   AccessKey:
+     Type: AWS::IAM::AccessKey
+     Properties:
+         Serial: 1
+         Status: Active
+         UserName: !Ref  IamUser
+   AccessKeySecret:
+      Type: AWS::SecretsManager::Secret
+      Properties:
+         Description: !Sub "these are the credentials for the iam user ${IamUser}"
+         Name: secretkey
+         SecretString: !Join
+         - ""
+         - - '{"AccessKeyId":"'
+           - !Ref AccessKey
+           - '","SecretAccessKey":"'
+           - !GetAtt AccessKey.SecretAccessKey
+           - '"}' 
+
+      
